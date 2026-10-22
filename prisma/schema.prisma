@@ -47,3 +47,28 @@ model OraclePairOverride {
   @@index([srcTokenId])
   @@index([dstTokenId])
 }
+
+// A cross-chain swap intent. The `locked*` fields pin the exact oracle
+// fair-value snapshot that `validateMinDstAmount()` validated against at
+// creation time, so later reconciliation/audit can compare against the price
+// the user actually agreed to rather than a newer live snapshot.
+model Intent {
+  id        String   @id @default(cuid())
+  srcTokenId String
+  dstTokenId String
+  srcAmount  String
+  minDstAmount String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Locked fair-value snapshot from the successful MinDstValidationOk result.
+  // `lockedFairValue` is null when the oracle was unavailable (fail-open),
+  // which is distinguishable from a computed fair value of zero.
+  lockedFairValue    String?
+  lockedSlippageBps  BigInt?
+  lockedPremiumBps   BigInt?
+  lockedAsOfMs       BigInt?
+
+  @@index([srcTokenId])
+  @@index([dstTokenId])
+}
