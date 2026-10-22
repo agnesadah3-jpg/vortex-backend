@@ -51,6 +51,21 @@ export class AggregatorService {
   }
 
   /**
+   * Read the current USD price for a single token (issue #637).
+   *
+   * Reuses the same registry lookup as {@link getPriceSnapshot} so price-alert
+   * subscriptions do not introduce a second price-fetch path. Returns `null`
+   * when the registry has no entry or a non-positive price for the token.
+   */
+  async getTokenPriceUsd(params: {
+    chain: SupportedChain;
+    tokenAddress: string;
+  }): Promise<bigint | null> {
+    const token = await this.tokens.resolveSrcToken(params.chain, params.tokenAddress);
+    return token ? usdPriceToScale(token.priceUSD) : null;
+  }
+
+  /**
    * Normalize a token pair into the `srcToken:dstToken` lookup key.
    *
    * Source addresses are lowercased (EVM-style hex is case-insensitive) and

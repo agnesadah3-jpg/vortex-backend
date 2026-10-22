@@ -72,3 +72,24 @@ model Intent {
   @@index([srcTokenId])
   @@index([dstTokenId])
 }
+
+// A user/solver subscription to be notified once when a token's USD price
+// crosses a threshold. `direction` is "above" or "below". Alerts are
+// one-shot: once fired (or cancelled) `isActive` flips to false so the
+// scheduled checker never re-fires the same subscription.
+model PriceAlert {
+  id            String   @id @default(cuid())
+  tokenAddress  String
+  chain         String
+  direction     String
+  thresholdUsd  String
+  // WS connection/room to notify when the threshold is crossed.
+  connectionId  String?
+  isActive      Boolean  @default(true)
+  firedAt       DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([tokenAddress, chain])
+}
